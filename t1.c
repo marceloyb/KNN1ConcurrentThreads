@@ -6,8 +6,29 @@
 #include <string.h>
 #include <math.h>
 
+int linhadamatrizteste;
+int natributos, nlinhasbase, nlinhasteste, nth;
+float **matrizbase;
+float **matrizteste;
+float *min;
 char buffer[50];
-float minddp;
+float distanciaMinima;
+
+void alocamatriz(){
+  int i,j;
+  min = (float*)malloc(nth * sizeof(float*));
+	for (i = 0; i < nth; i++)
+		min[i] = 99999999999;
+  matrizbase = (float**)malloc(nlinhasbase * sizeof(float*));
+  matrizteste = (float**)malloc(nlinhasteste * sizeof(float*));
+  for (i = 0; i < nlinhasbase; i++){
+    matrizbase[i] = (float*) malloc (natributos * sizeof(float));
+  }
+  for (i = 0; i < nlinhasteste; i++){
+    matrizteste[i] = (float*) malloc (natributos * sizeof(float));
+  }
+}
+
 
 char *get_rec(FILE *file){
 	int i = 0, j;
@@ -25,66 +46,78 @@ char *get_rec(FILE *file){
   return buffer;
 }
 
-float findmin(int linhateste, int nlinhasbase, int natributos, float matrizteste[][natributos], float matrizbase[][natributos]){
-  int i, j;
+void *findmin(void *arg){
+  long int i, j, linhadomenor;
+  long int tid = (long int)arg;
   float soma, minlinha;
   minlinha = 9999999999999;
-  for (i = 0; i < nlinhasbase; i++){
+  
+  for (i = tid; i < nlinhasbase; i+=nth){
+    soma = 0;
     for (j = 0; j < natributos; j++){
-      soma += powf((matrizteste[linhateste][j] - matrizbase[i][j]), 2);
+      soma = soma + powf((matrizteste[linhadamatrizteste][j] - matrizbase[i][j]), 2);      
     }
     soma = sqrtf(soma);
-    if(soma < minlinha)
-      minlinha = soma;
+	  if(soma < min[tid]){
+      min[tid] = soma;
+      linhadomenor = i;      
     }
-  
-  return minlinha;
+  }
+  for (i = 0; i < nth; i++){
+   //printf ("\nminimo da thread %ld %f",i, min[i]);
+  }
 }
 
-void sequencial(int nlinhasteste, int nlinhasbase, int natributos, float matrizteste[][natributos], float matrizbase[][natributos]){
-  int i, j, k, l;
-  float soma = 0;
-  for (i = 0; i < nlinhasteste; i++){
-    minddp = findmin(i, nlinhasbase, natributos, matrizteste, matrizbase);
-    printf ("linha %i %f\n",i,minddp);
-  }            
-}
 
-void paralelizado(int nlinhasteste, int nlinhasbase, int natributos, float matrizteste[][natributos], float matrizbase[][natributos]){
-  
+void paralelizado(){
+  long int i, j, k;
+  linhadamatrizteste = 0;
+  pthread_t *t = (pthread_t *) malloc (nth * sizeof(pthread_t));
+  do{
+    for(j = 0; j < nth; j++){
+      pthread_create(&t[j], NULL, findmin, (void*)j);
+    }
+    for(j = 0; j < nth; j++){
+      pthread_join(t[j], NULL);
+    }
+    for(k = 0; k < nth; k++){
+     //printf ("\nlinha %i %f\n", linhadamatrizteste+1, min[k]);
+     min[k] = 9999999;
+    }
+    linhadamatrizteste++;
+  }while(linhadamatrizteste < nlinhasteste); 
 }
 	
 int main (int argc, char *argv[]){
-  int i, j;
+  int i, j; nth = atoi(argv[1]);
   float atributoi;
-  int natributos, nlinhasbase, nlinhasteste;
   char *atributo = malloc(sizeof(char)*50);
   char *nomearquivobase = (char*)malloc(20 * sizeof(char));
   char *nomearquivoteste = (char*)malloc(20 * sizeof(char));
  	FILE *ARQUIVOBASE;
   FILE *ARQUIVOTESTE;
-  nomearquivobase = argv[1];
-  nomearquivoteste = argv[2];
+  nomearquivobase = argv[2];
+  nomearquivoteste = argv[3];
   ARQUIVOBASE = fopen(nomearquivobase, "r");
   ARQUIVOTESTE = fopen(nomearquivoteste, "r");
-  natributos = atoi(argv[3]);
-  nlinhasteste = atoi(argv[4]);
-  nlinhasbase = atoi(argv[5]);
-  float base[nlinhasbase][natributos];
-  float teste[nlinhasteste][natributos];
+  natributos = atoi(argv[4]);
+  nlinhasteste = atoi(argv[5]);
+  nlinhasbase = atoi(argv[6]);
+  alocamatriz();
   for (i = 0; i < nlinhasbase; i++){
     for (j = 0; j < natributos; j++){
       atributo = get_rec(ARQUIVOBASE);
       atributoi = atof(atributo);
-      base[i][j] = atributoi;
+      matrizbase[i][j] = atributoi;
     } 
   }
   for (i = 0; i < nlinhasteste; i++){
     for (j = 0; j < natributos; j++){
       atributo = get_rec(ARQUIVOTESTE);
       atributoi = atof(atributo);
-      teste[i][j] = atributoi;
+      matrizteste[i][j] = atributoi;
     }
   }
-  sequencial(nlinhasteste, nlinhasbase, natributos, teste, base);
+  //sequencial();
+  paralelizado();
 } 
