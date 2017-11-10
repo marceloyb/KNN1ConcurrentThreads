@@ -7,7 +7,7 @@
 #include <math.h>
 
 int linhadamatrizteste;
-int natributos, nlinhasbase, nlinhasteste, nth;
+int natributos, nlinhasbase = 6746, nlinhasteste = 2248, nth;
 float **matrizbase;
 float **matrizteste;
 float *min;
@@ -103,8 +103,6 @@ int main (int argc, char *argv[]){
   ARQUIVOBASE = fopen(nomearquivobase, "r");
   ARQUIVOTESTE = fopen(nomearquivoteste, "r");
   natributos = atoi(argv[4]);
-  nlinhasteste = atoi(argv[5]);
-  nlinhasbase = atoi(argv[6]);
   alocamatriz();
   for (i = 0; i < nlinhasbase; i++){
     for (j = 0; j < natributos; j++){
