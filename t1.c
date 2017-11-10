@@ -63,15 +63,13 @@ void *findmin(void *arg){
       linhadomenor = i;      
     }
   }
-  for (i = 0; i < nth; i++){
-   //printf ("\nminimo da thread %ld %f",i, min[i]);
-  }
 }
 
 
 void paralelizado(){
   long int i, j, k;
   linhadamatrizteste = 0;
+  float minimolinha;
   pthread_t *t = (pthread_t *) malloc (nth * sizeof(pthread_t));
   do{
     for(j = 0; j < nth; j++){
@@ -81,9 +79,13 @@ void paralelizado(){
       pthread_join(t[j], NULL);
     }
     for(k = 0; k < nth; k++){
-     //printf ("\nlinha %i %f\n", linhadamatrizteste+1, min[k]);
+     if(min[k] < minimolinha)
+      minimolinha = min[k];
+    // printf ("\nlinha %i %f\n", linhadamatrizteste+1, min[k]);
      min[k] = 9999999;
     }
+    printf ("%f \n", minimolinha);
+    minimolinha = 999;
     linhadamatrizteste++;
   }while(linhadamatrizteste < nlinhasteste); 
 }
