@@ -81,10 +81,10 @@ void paralelizado(){
     for(k = 0; k < nth; k++){
      if(min[k] < minimolinha)
       minimolinha = min[k];
-    // printf ("\nlinha %i %f\n", linhadamatrizteste+1, min[k]);
+     printf ("\nlinha %i %f\n", linhadamatrizteste+1, min[k]);
      min[k] = 9999999;
     }
-    printf ("%f \n", minimolinha);
+   // printf ("%f \n", minimolinha);
     minimolinha = 999;
     linhadamatrizteste++;
   }while(linhadamatrizteste < nlinhasteste); 
@@ -118,6 +118,5 @@ int main (int argc, char *argv[]){
       matrizteste[i][j] = atributoi;
     }
   }
-  //sequencial();
   paralelizado();
 } 
