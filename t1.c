@@ -36,7 +36,7 @@ char *get_rec(FILE *file){
 	for (c = fgetc(file); c != ','; c = fgetc(file)){
 		if (c == EOF)
 			return EOF;
-    if (c == '\n'){     
+    if (c == '\n'){
      i = 0;
      c = fgetc(file);
     }
@@ -51,16 +51,16 @@ void *findmin(void *arg){
   long int tid = (long int)arg;
   float soma, minlinha;
   minlinha = 9999999999999;
-  
+
   for (i = tid; i < nlinhasbase; i+=nth){
     soma = 0;
     for (j = 0; j < natributos; j++){
-      soma = soma + powf((matrizteste[linhadamatrizteste][j] - matrizbase[i][j]), 2);      
+      soma = soma + powf((matrizteste[linhadamatrizteste][j] - matrizbase[i][j]), 2);
     }
     soma = sqrtf(soma);
 	  if(soma < min[tid]){
       min[tid] = soma;
-      linhadomenor = i;      
+      linhadomenor = i;
     }
   }
 }
@@ -81,15 +81,15 @@ void paralelizado(){
     for(k = 0; k < nth; k++){
      if(min[k] < minimolinha)
       minimolinha = min[k];
-     printf ("\nlinha %i %f\n", linhadamatrizteste+1, min[k]);
+     // printf ("\nlinha %i %f\n", linhadamatrizteste+1, min[k]);
      min[k] = 9999999;
     }
-   // printf ("%f \n", minimolinha);
+    printf ("linha %i %f \n", linhadamatrizteste, minimolinha);
     minimolinha = 999;
     linhadamatrizteste++;
-  }while(linhadamatrizteste < nlinhasteste); 
+  }while(linhadamatrizteste < nlinhasteste);
 }
-	
+
 int main (int argc, char *argv[]){
   int i, j; nth = atoi(argv[1]);
   float atributoi;
@@ -109,7 +109,7 @@ int main (int argc, char *argv[]){
       atributo = get_rec(ARQUIVOBASE);
       atributoi = atof(atributo);
       matrizbase[i][j] = atributoi;
-    } 
+    }
   }
   for (i = 0; i < nlinhasteste; i++){
     for (j = 0; j < natributos; j++){
@@ -119,4 +119,4 @@ int main (int argc, char *argv[]){
     }
   }
   paralelizado();
-} 
+}
